@@ -1,0 +1,56 @@
+services:
+  nginx:
+    image: nginx:1.20
+    container_name: nginx-caraudio
+    links:
+      - php-caraudio
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:delegated
+      - ./ssl:/etc/nginx/ssl:delegated
+      - ../:/var/www/html/caraudio:delegated
+    ports:
+      - "80:80"
+      - "443:443"
+    working_dir: /var/www/html/caraudio
+    networks:
+      caraudio_network:
+        ipv4_address: 172.24.0.2
+  php-caraudio:
+    working_dir: /var/www/html/caraudio
+    build:
+      context: ./
+      dockerfile: php/php.Dockerfile
+    image: php8.2-caraudio
+    container_name: php-caraudio
+    volumes:
+      - ../:/var/www/html/caraudio:delegated
+    networks:
+      caraudio_network:
+        ipv4_address: 172.24.0.4
+
+  mysql:
+    image: mariadb:10.6.10
+    container_name: caraudio-db
+    restart: "on-failure"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: caraudio
+    ports:
+      - "3306:3306"
+    volumes:
+      - caraudio-mysql-data:/var/lib/mysql
+    networks:
+      caraudio_network:
+        ipv4_address: 172.24.0.3
+
+volumes:
+  caraudio-mysql-data:
+    external: true
+
+networks:
+  caraudio_network:
+    name: caraudio_network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.24.0.0/16

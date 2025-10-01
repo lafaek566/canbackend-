@@ -1,0 +1,6 @@
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "*"
+    Header set Access-Control-Request-Method: "*"
+    Header set Access-Control-Allow-Headers "*"
+</IfModule>

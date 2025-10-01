@@ -1,0 +1,82 @@
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+server {
+    listen      443 ssl http2;
+    listen      [::]:443 ssl http2;
+    index index.php index.html;
+    server_name ems.local;
+    server_tokens off;
+    root /var/www/html/ems/public;
+    client_max_body_size 15M;
+
+    ssl_certificate /etc/nginx/ssl/ems.local+5.pem;
+    ssl_certificate_key /etc/nginx/ssl/ems.local+5-key.pem;
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_prefer_server_ciphers on;
+    ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+    ssl_ecdh_curve secp384r1;
+
+#    location ~ \.php$ {
+#        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+#        fastcgi_pass php-ems:9000;
+#        fastcgi_index index.php;
+#        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+#        fastcgi_param SCRIPT_NAME $fastcgi_script_name;
+#        fastcgi_param QUERY_STRING $query_string;
+#        include fastcgi_params;
+#    }
+
+    charset utf-8;
+
+    location /index.php {
+        try_files /not_exists @octane;
+    }
+
+    # avoid unnecessary log
+    location = /favicon.ico {
+        access_log off;
+        log_not_found off;
+    }
+
+    location = /robots.txt {
+        access_log off;
+        log_not_found off;
+    }
+
+    # Handle any other URI
+    location / {
+        try_files $uri $uri/ @octane;
+    }
+
+    error_log  /var/log/nginx/domain.com-error.log error;
+    error_page 404 /index.php;
+
+    location @octane {
+        set $suffix "";
+
+        if ($uri = /index.php) {
+            set $suffix ?$query_string;
+        }
+
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header Scheme $scheme;
+        proxy_set_header SERVER_PORT $server_port;
+        proxy_set_header REMOTE_ADDR $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+
+        proxy_pass http://172.14.0.4:8000$suffix;
+    }
+}
+
+server {
+	listen 80;
+	listen [::]:80;
+	server_name ems.local;
+	return 301 https://ems.local$request_uri;
+}
