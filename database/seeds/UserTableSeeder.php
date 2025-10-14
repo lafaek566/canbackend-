@@ -22,7 +22,7 @@ class UserTableSeeder extends Seeder
             'user_id' => $user->id,
             'avatar' => null, 
             'banner' => null,
-            'phone_no' => '0800123456',
+            'phone_no' => '0800023456',
             'biography' => 'This is the main administrator profile.',
         ]);
     }

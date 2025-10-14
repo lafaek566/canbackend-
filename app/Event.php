@@ -75,6 +75,11 @@ class Event extends Model
         return $this->belongsTo(EventType::class, 'event_type_id');
     }
 
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'event_country_id');
+    }
+
     public function getEventStatusPastByDateStart($date_start)
     {
         $date = date('Y-m-d');

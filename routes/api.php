@@ -20,6 +20,48 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['middleware' => ['cors']], function () {
 
+    // ========================================================================
+    // LOCAL API ENDPOINTS (Synced from Production)
+    // These endpoints serve data from local database (carnew)
+    // Use http://127.0.0.1:8000/api instead of production API
+    // ========================================================================
+    
+    // Health check
+    Route::get('health', 'Api\LocalApiController@healthCheck');
+    
+    // HOME PAGE
+    Route::get('top-three-judges', 'Api\LocalApiController@topThreeJudges');
+    Route::get('top-three-participants', 'Api\LocalApiController@topThreeParticipants');
+    
+    // NEWS
+    Route::get('news-list-all', 'Api\LocalApiController@newsListAll');
+    Route::get('news-list/all', 'Api\LocalApiController@newsListAll'); // Alias
+    Route::get('news-detail/{id}', 'Api\LocalApiController@newsDetail');
+    
+    // SPONSORS
+    Route::get('news-list-sponsor-tier', 'Api\LocalApiController@newsListSponsorTier');
+    Route::get('news-list-sponsor-all', 'Api\LocalApiController@newsListSponsorAll');
+    Route::get('news-list-sponsor-id/{id}', 'Api\LocalApiController@newsListSponsorId');
+    Route::get('country-sponsor-list/all', 'Api\LocalApiController@countrySponsorListAll');
+    
+    // EVENTS (Local - override existing if needed)
+    Route::get('event-upcoming/list', 'Api\LocalApiController@eventUpcomingList');
+    Route::get('event-past/list', 'Api\LocalApiController@eventPastList');
+    Route::get('event-detail/{id}', 'Api\LocalApiController@eventDetail');
+    
+    // USERS
+    Route::get('user-list/all', 'Api\LocalApiController@userListAll');
+    Route::get('user-detail/{id}', 'Api\LocalApiController@userDetail');
+    Route::get('judge-list-all', 'Api\LocalApiController@judgeListAll');
+    
+    // CARS
+    Route::get('car-list/all', 'Api\LocalApiController@carListAll');
+    Route::get('car-detail/{id}', 'Api\LocalApiController@carDetail');
+    
+    // ========================================================================
+    // END LOCAL API ENDPOINTS
+    // ========================================================================
+
     // Route::post('confirmation-code', 'Auth\ApiRegisterController@confirmCode');
     Route::post('register', 'Auth\ApiRegisterController@register');
     Route::post('resend-code', 'Auth\ApiRegisterController@resendConfirmCode');
@@ -41,16 +83,16 @@ Route::group(['middleware' => ['cors']], function () {
     //user profiles
     Route::get('user-profile-detail/{user_id}', 'UserProfileController@listDetail');
 
-    //Events
-    Route::get('event-upcoming/list', 'EventController@listAndCountUpcomingLimit');
-    Route::get('event-upcoming/list/order', 'EventController@listUpcomingOrder');
-    Route::get('event-past/list', 'EventController@listAndCountPastLimit');
-    Route::get('event-past/list/order', 'EventController@listPastOrder');
+    //Events (OLD - COMMENTED, USE LocalApiController ABOVE)
+    // Route::get('event-upcoming/list', 'EventController@listAndCountUpcomingLimit');
+    // Route::get('event-upcoming/list/order', 'EventController@listUpcomingOrder');
+    // Route::get('event-past/list', 'EventController@listAndCountPastLimit');
+    // Route::get('event-past/list/order', 'EventController@listPastOrder');
     Route::get('event-association-upcoming/list', 'EventController@listAndCountUpcomingLimitAssociation');
     Route::get('event-association-upcoming/list/order', 'EventController@listUpcomingOrderAssociation');
     Route::get('event-association-past/list', 'EventController@listAndCountPastLimitAssociation');
     Route::get('event-association-past/list/order', 'EventController@listPastOrderAssociation');
-    Route::get('event-detail/{id}', 'EventController@listDetail');
+    // Route::get('event-detail/{id}', 'EventController@listDetail'); // USE LocalApiController
     Route::get('event-participated-cars/{id}', 'EventController@listParticipatedCars');
     Route::get('event-sponsor/list/{sponsor_id}', 'EventController@listAllBySponsorId');
     Route::get('event-judges/list/{judge_id}', 'EventController@listAllByJudgeId');
@@ -119,7 +161,7 @@ Route::group(['middleware' => ['cors']], function () {
     Route::get('news-list', 'NewsController@listAllByCountryId');
     Route::get('associations-news-list', 'NewsController@listAllByAssociationId');
     Route::get('news-list-sponsor-id/{user_id}', 'NewsController@listAllBySponsorId');
-    Route::get('news-list-sponsor-tier', 'NewsController@listAllBySponsorTier');
+    // Route::get('news-list-sponsor-tier', 'NewsController@listAllBySponsorTier'); // REPLACED by Api\LocalApiController
     Route::get('news-association-list-sponsor', 'NewsController@listAllByAssociationSponsor');
     Route::post('news-list-sponsor', 'NewsController@listAllBySponsor');
 
@@ -201,7 +243,7 @@ Route::group(['middleware' => ['cors', 'auth:api']], function () {
     Route::post('change-role', 'Auth\ApiRegisterController@changeRole');
     Route::post('delete/{id}', 'Auth\ApiRegisterController@delete');
     Route::post('user-banned', 'UserController@userBanned');
-    Route::get('user-list/all', 'UserController@listAll');
+    // Route::get('user-list/all', 'UserController@listAll'); // Commented: Use LocalApiController instead
     Route::get('user-list/verify', 'UserController@listVerify');
     Route::get('user-list/sponsor-admin', 'UserController@listAllSponsorAdmin');
     Route::get('user-list/all/sponsors', 'UserController@listAllSponsors');

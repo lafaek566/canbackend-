@@ -68,7 +68,7 @@ class UserController extends Controller
             })
             ->offset($request->offset)
             ->limit($request->limit)
-            ->orderBy($request->column, $request->sort)
+            ->orderBy($request->column ?? 'users.created_at', $request->sort ?? 'desc')
             ->get();
 
         $userCount = User::select(

@@ -60,9 +60,15 @@ class UserProfileController extends Controller
             'role_id',
             \DB::raw('(SELECT COUNT(*) FROM cars WHERE cars.user_id = ' . $request->user_id . ') AS cars_count')
         )
-            ->join('cars', 'cars.user_id', '=', 'users.id')
             ->where('users.id', '=', $request->user_id)
             ->first();
+
+        if (!$userPointAndRating) {
+            return response()->json([
+                'error' => true,
+                'message' => 'User not found'
+            ], 404);
+        }
 
         $points[] = $userPointAndRating['can_q_consumer_point'];
         $points[] = $userPointAndRating['can_q_prosumer_point'];
