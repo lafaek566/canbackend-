@@ -24,12 +24,11 @@ Route::group(['middleware' => ['cors']], function () {
     Route::post('register', 'Auth\ApiRegisterController@register');
     Route::post('resend-code', 'Auth\ApiRegisterController@resendConfirmCode');
     Route::post('login', 'Auth\LoginController@login');
+    Route::post('logout', 'Auth\LoginController@logout')->middleware('auth:api');
 
     Route::post('sent-reset-password-link', 'Auth\ApiRegisterController@sentResetPassword');
     Route::post('reset-password', 'Auth\ApiRegisterController@resetPassword');
     Route::post('check-reset-password-link', 'Auth\ApiRegisterController@checkResetPasswordLink');
-
-    // Route::post('logout', 'Auth\LoginController@logout');
     // Route::post('register-invite', 'Auth\ApiRegisterController@registerByInvites');
 
     Route::get('audio-listen/{public}/{audio}/{user_id}/{audio_id}', 'AudioController@listenAudio');

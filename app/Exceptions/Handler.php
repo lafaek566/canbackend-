@@ -2,13 +2,14 @@
 
 namespace App\Exceptions;
 
-use Exception;
+use Throwable;
 use Request;
 use Response;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use \Illuminate\Validation\ValidationException;
-use \Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Auth\AuthenticationException;
 
 class Handler extends ExceptionHandler
 {
@@ -39,10 +40,10 @@ class Handler extends ExceptionHandler
     /**
      * Report or log an exception.
      *
-     * @param  \Exception  $exception
+     * @param  \Throwable  $exception
      * @return void
      */
-    public function report(Exception $exception)
+    public function report(Throwable $exception)
     {
         parent::report($exception);
     }
@@ -52,58 +53,40 @@ class Handler extends ExceptionHandler
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Exception  $exception
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
-    public function render($request, Exception $e)
+    public function render($request, Throwable $e)
     {
-         // This will replace our 404 response with
-        // a JSON response.
-
-        if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException && $request->wantsJson())
-        {
-            return response()->json([
+        if ($request->wantsJson()) {
+            $response = [
                 'status' => 'error',
-                'type' => 'Resource not found',
-                'error' => $e->errors()
-                ]);
+                'message' => $e->getMessage()
+            ];
 
-        }
-        /*
-        return response()->json([
-            'status' => $request,
-            'error' => $exception
+            if ($e instanceof ModelNotFoundException) {
+                $response['type'] = 'Resource not found';
+                return response()->json($response, 404);
+            }
 
-        ]);
-        */
+            if ($e instanceof ValidationException) {
+                $response['type'] = 'validation';
+                $response['errors'] = $e->errors();
+                return response()->json($response, 422);
+            }
 
+            // Default error response
+            $response['type'] = 'Exception';
+            $response['file'] = $e->getFile();
+            $response['line'] = $e->getLine();
+            
+            if (config('app.debug')) {
+                $response['trace'] = $e->getTrace();
+            }
 
-        if ($e instanceof \Illuminate\Database\Eloquent\ValidationException && $request->wantsJson() ) {
-
-            return response()->json([
-                'status' => 'error',
-                'type' => 'validation',
-                'error' => $e->errors(),
-                'error_message' => $e->getMessage()
-            ]);
-
+            return response()->json($response, 500);
         }
 
-        if ($request->wantsJson() ) {
-
-
-            return response()->json([
-                'status' => 'error',
-                'error' => $e,
-                'error_message' => $e->getMessage()
-            ]);
-            return response()->json([
-                'status' => 'error',
-                'error' => $e->errors(),
-            ]);
-
-        }
         return parent::render($request, $e);
-        // return parent::render($request, $exception);
     }
 
 
@@ -112,7 +95,7 @@ class Handler extends ExceptionHandler
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Illuminate\Auth\AuthenticationException  $exception
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
     protected function unauthenticated($request, AuthenticationException $exception)
     {

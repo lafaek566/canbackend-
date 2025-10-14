@@ -176,7 +176,7 @@ return [
         App\Providers\TelescopeServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
-        Barryvdh\Cors\ServiceProvider::class,   /*(Tambahan)*/
+        Fruitcake\Cors\CorsServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,    /*(Tambahan)*/
 
         // Nexmo\Laravel\NexmoServiceProvider::class,

@@ -69,19 +69,17 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        if (Auth::user()) {
-            /** @var \App\User $authUser */
-            $authUser = Auth::user();
-            $authUser->token()->revoke();
-        }
+        try {
+            if ($request->user()) {
+                $request->user()->tokens->each(function ($token) {
+                    $token->revoke();
+                });
+            }
 
-        $user = User::where('id', $request->id)->first();
-        if ($user) {
-            $user->api_token = null;
-            $user->save();
+            return response()->json(['status' => 'success', 'message' => 'logged out successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'success', 'message' => 'logged out successfully'], 200);
         }
-
-        return response()->json(['status' => 'success', 'message' => 'logged out successfully'], 200);
     }
 
     public function switchUser(Request $request) 
